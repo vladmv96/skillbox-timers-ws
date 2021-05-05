@@ -8,6 +8,7 @@ require("dotenv").config();
 const wsInit = require("./ws");
 
 const clientPromise = MongoClient.connect(process.env.DB_URI, {
+  useNewUrlParser: true,
   useUnifiedTopology: true,
   poolSize: 10,
 });

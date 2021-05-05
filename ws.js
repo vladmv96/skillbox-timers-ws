@@ -4,6 +4,7 @@ const WebSocket = require("ws");
 const { MongoClient } = require("mongodb");
 
 const clientPromise = MongoClient.connect(process.env.DB_URI, {
+  useNewUrlParser: true,
   useUnifiedTopology: true,
   poolSize: 10,
 });
