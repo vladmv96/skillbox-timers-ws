@@ -30,8 +30,8 @@ const deleteSession = async (db, sessionId) => {
   await db.collection("sessions").deleteOne({ sessionId });
 };
 
-const getAllTimers = async (db, isActive) => {
-  const timers = await db.collection("timers").find({ isActive }).toArray();
+const getAllTimers = async (db, isActive, userId) => {
+  const timers = await db.collection("timers").find({ isActive, userId }).toArray();
   return timers.map((timer) => ({
     ...timer,
     id: timer._id,
@@ -39,11 +39,12 @@ const getAllTimers = async (db, isActive) => {
   }));
 };
 
-const addTimer = async (db, description) => {
+const addTimer = async (db, description, userId) => {
   const newTimer = {
     description,
     start: Date.now(),
     isActive: true,
+    userId
   };
   const {
     ops: [timer],

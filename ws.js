@@ -9,12 +9,12 @@ const clientPromise = MongoClient.connect(process.env.DB_URI, {
   poolSize: 10,
 });
 
-const sendAllTimers = async (db, ws, isActive, newTimerId) => {
+const sendAllTimers = async (db, ws, isActive, newTimerId, userId) => {
   ws.send(
     JSON.stringify({
       type: "all_timers",
       isActive: isActive,
-      timers: await getAllTimers(db, isActive),
+      timers: await getAllTimers(db, isActive, userId),
       newTimerId,
     })
   );
@@ -50,12 +50,12 @@ const wsInit = async (server) => {
       clients.delete(user._id);
     });
 
-    sendAllTimers(db, ws, true);
-    sendAllTimers(db, ws, false);
+    sendAllTimers(db, ws, true, null, user._id);
+    sendAllTimers(db, ws, false, null, user._id);
 
     setInterval(() => {
-      for (ws of clients.values()) {
-        sendAllTimers(db, ws, true);
+      for ([id, ws] of clients.entries()) {
+        sendAllTimers(db, ws, true, null, id);
       }
     }, 1000);
 
@@ -68,14 +68,14 @@ const wsInit = async (server) => {
       }
 
       if (data.type === "add_timer") {
-        const { id } = await addTimer(db, data.description);
-        sendAllTimers(db, ws, true, id);
+        const { id } = await addTimer(db, data.description, user._id);
+        sendAllTimers(db, ws, true, id, user._id);
       }
 
       if (data.type === "stop_timer") {
         await stopTimer(db, data.id);
-        sendAllTimers(db, ws, true);
-        sendAllTimers(db, ws, false);
+        sendAllTimers(db, ws, true, null, user._id);
+        sendAllTimers(db, ws, false, null, user._id);
       }
     });
   });
